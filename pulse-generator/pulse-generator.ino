@@ -1,45 +1,36 @@
-#define AIN_PIN 0
-#define PWMOUT_PIN 11
+#include "TimerOne.h"
 
-//int v_max = round(255 * 1.4 / 5.0);
-//int v_min = round(255 * 0.7 / 5.0);
+#define OUTPIN 13
+#define HZ 32
 
-int ain = 0;
-float volt = 0.0;
-int volt_out = 0;
+long t1 = (32 / 2 * 1000); // ms
+long t2 = (32 / 2 * 1000); // ms
+int v = 0; 
 
 void setup() {
-    
-  pinMode(PWMOUT_PIN, OUTPUT);
-
   Serial.begin(9600);
+  pinMode(OUTPIN, OUTPUT);
+  Timer1.initialize(1000000);
+  Timer1.attachInterrupt(pulseOn);
+}
 
+void pulseOn() {
+  digitalWrite(OUTPIN, HIGH);
+  Timer1.setPeriod(t1);
+  Timer1.attachInterrupt(pulseOff);
+}
+
+void pulseOff() {
+  digitalWrite(OUTPIN, LOW);
+  Timer1.setPeriod(t2);
+  Timer1.attachInterrupt(pulseOn);
+}
+
+double vToHz(int v) {
+  return v * (4 * 637) / (60 * 60);
 }
 
 void loop() {
-
-  ain = analogRead(AIN_PIN);
-  volt = 0.7 + (0.7 * ain / 1023.0);
-  volt_out = round(255 * volt / 5.0);
-
-  analogWrite(PWMOUT_PIN, volt_out);
-
-//  for ( int led_value = v_min; led_value <= v_max; led_value += 1 ) {
-//    analogWrite( 11, led_value );
-//    delay( 100 );
-//  }
-//  delay( 2000 );
-//  
-//  for ( int led_value = v_max; led_value >= v_min; led_value -= 1 ) {
-//    analogWrite( 11, led_value );
-//    delay( 100 );
-//  }
-//  delay( 2000 );
-
-  Serial.print("volt=");
-  Serial.println(volt);
-//  Serial.println("");
-  
-  delay(500);
-  
+  Serial.print(vToHz(30));
+  delay(1000);
 }
